@@ -4,33 +4,53 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #endif /* _CMOC_VERSION_ */
 
 #include "message.h"
 
 char msg[512], old_msg[512];
+long last_timestamp = 0;
 
 const char devicespec[] = "N:https://display.irata.online/get";
+const char timestampspec[] = "N:https://display.irata.online/timestamp";
 
 bool new_message(char *msg)
 {
-    if (network_open(devicespec,4,0) != FN_ERR_OK)
+    char timestamp_str[32];
+    long current_timestamp;
+
+    // Fetch the current timestamp
+    if (network_open(timestampspec, 4, 0) != FN_ERR_OK)
     {
         return false;
     }
 
-    memset(msg,0,512);
-    network_read(devicespec,msg,512);
+    memset(timestamp_str, 0, 32);
+    network_read(timestampspec, timestamp_str, 32);
+    network_close(timestampspec);
 
-    if (!strcmp(msg,old_msg))
+    // Convert timestamp string to long
+    current_timestamp = atol(timestamp_str);
+
+    // Check if timestamp is newer than last successful message
+    if (current_timestamp <= last_timestamp)
     {
-        network_close(devicespec);
         return false;
     }
 
-    memset(old_msg,0,512);
-    strcpy(old_msg,msg);
+    // Fetch the message
+    if (network_open(devicespec, 4, 0) != FN_ERR_OK)
+    {
+        return false;
+    }
+
+    memset(msg, 0, 512);
+    network_read(devicespec, msg, 512);
     network_close(devicespec);
+
+    // Update last timestamp
+    last_timestamp = current_timestamp;
 
     return true;
 }

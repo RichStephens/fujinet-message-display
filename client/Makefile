@@ -1,8 +1,8 @@
-PRODUCT = display 
+PRODUCT = display
 #PLATFORMS += adam
 #PLATFORMS += adam_cpm
 #PLATFORMS += apple2
-PLATFORMS += atari
+PLATFORMS = atari
 #PLATFORMS += c64
 #PLATFORMS += coco
 #PLATFORMS += msdos
