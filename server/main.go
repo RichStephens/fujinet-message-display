@@ -6,13 +6,15 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 // --- In-memory store ---
 
 var (
-	mu      sync.RWMutex
-	message = "HELLO FROM FUJINET!"
+	mu          sync.RWMutex
+	message     = "HELLO FROM FUJINET!"
+	lastUpdated = time.Now()
 )
 
 // --- HTML template ---
@@ -370,8 +372,9 @@ const indexHTML = `<!DOCTYPE html>
   <!-- Endpoint hint -->
   <div class="endpoint-hint">
     <div class="hint-title">// DEVICE ENDPOINTS</div>
-    <div><code>POST /post</code> — submit a message to memory</div>
-    <div><code>GET  /get</code>  — retrieve current message as plain text</div>
+    <div><code>POST /post</code>      — submit a message to memory</div>
+    <div><code>GET  /get</code>       — retrieve current message as plain text</div>
+    <div><code>GET  /timestamp</code> — Unix timestamp of the last received message</div>
   </div>
 
   <script>
@@ -442,6 +445,7 @@ func handlePost(w http.ResponseWriter, r *http.Request) {
 
 	mu.Lock()
 	message = msg
+	lastUpdated = time.Now()
 	mu.Unlock()
 
 	log.Printf("message updated: %q", msg)
@@ -462,12 +466,27 @@ func handleGet(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, msg)
 }
 
+func handleTimestamp(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	mu.RLock()
+	ts := lastUpdated
+	mu.RUnlock()
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprintf(w, "%d", ts.Unix())
+}
+
 // --- Main ---
 
 func main() {
 	http.HandleFunc("/", handleIndex)
 	http.HandleFunc("/post", handlePost)
 	http.HandleFunc("/get", handleGet)
+	http.HandleFunc("/timestamp", handleTimestamp)
 
 	addr := ":8080"
 	log.Printf("FujiNet Display Terminal listening on %s", addr)
