@@ -53,3 +53,16 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Build cache (downloaded libraries, etc.)
+_cache/
+
+# Python bytecode cache
+__pycache__/
+
+# Build output
+r2r/
+build/
+
+# Editor / IDE
+.vscode/

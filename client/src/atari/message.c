@@ -78,9 +78,13 @@ void show_qr_code(void)
     while (OS.rtclok[2] < 120); // and wait a bit.
 }
 
+#define MSG_COLS 20
+#define MSG_ROWS 25
+
 void display_message(const char *msg)
 {
-    int i=0;
+    int row=0, col=0, i=0, wlen, k;
+    char c;
 
     fade();
 
@@ -88,14 +92,55 @@ void display_message(const char *msg)
 
     OS.sdlst = (void *)&msg_dlist;
     memset(display_msg,0x00,sizeof(display_msg));
-    for (i=0;i<512;i++)
+
+    while (msg[i] != 0x00 && row < MSG_ROWS)
     {
-        if (msg[i] == 0x00) // End of string? stop.
-            break;
-        else if (msg[i] < 0x20 || msg[i] > 0x7F) // non-printable ASCII? ignore.
+        c = msg[i];
+
+        if (c == 0x0A) // newline
+        {
+            row++;
+            col = 0;
+            i++;
             continue;
-        else
-            display_msg[i] = convert_char(msg[i]);
+        }
+
+        if (c == 0x20) // space
+        {
+            if (col > 0 && col < MSG_COLS)
+                col++;
+            i++;
+            continue;
+        }
+
+        // measure the next word
+        wlen = 0;
+        while (msg[i+wlen] != 0x00 && msg[i+wlen] != 0x20 && msg[i+wlen] != 0x0A)
+            wlen++;
+
+        // wrap if the word will not fit on the current line
+        if (col > 0 && col + wlen > MSG_COLS)
+        {
+            row++;
+            col = 0;
+        }
+
+        for (k=0; k<wlen && row<MSG_ROWS; k++)
+        {
+            c = msg[i+k];
+            if (c < 0x20 || c > 0x7F) // non-printable ASCII? ignore.
+                continue;
+            if (col >= MSG_COLS)
+            {
+                row++;
+                col = 0;
+                if (row >= MSG_ROWS)
+                    break;
+            }
+            display_msg[row*MSG_COLS + col] = convert_char(c);
+            col++;
+        }
+        i += wlen;
     }
 
     while (OS.rtclok[1] < 2); // and wait a bit.

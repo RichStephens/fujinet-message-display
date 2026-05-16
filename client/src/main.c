@@ -19,6 +19,9 @@ bool new_message(char *msg)
 {
     char timestamp_str[32];
     long current_timestamp;
+#if defined(_CMOC_VERSION_) || defined(__MSDOS__)
+    static bool primed = false;
+#endif
 
     // Fetch the current timestamp
     if (network_open(timestampspec, 4, 0) != FN_ERR_OK)
@@ -32,6 +35,18 @@ bool new_message(char *msg)
 
     // Convert timestamp string to long
     current_timestamp = atol(timestamp_str);
+
+#if defined(_CMOC_VERSION_) || defined(__MSDOS__)
+    // On the first successful poll, adopt the server's current timestamp as
+    // the baseline. Whatever message is already on the server was not
+    // received this session, so it must not be displayed at startup.
+    if (!primed)
+    {
+        primed = true;
+        last_timestamp = current_timestamp;
+        return false;
+    }
+#endif
 
     // Check if timestamp is newer than last successful message
     if (current_timestamp <= last_timestamp)

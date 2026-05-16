@@ -4,7 +4,7 @@ PRODUCT = display
 #PLATFORMS += apple2
 PLATFORMS = atari
 #PLATFORMS += c64
-#PLATFORMS += coco
+PLATFORMS += coco
 #PLATFORMS += msdos
 #PLATFORMS += msxrom
 
@@ -34,7 +34,7 @@ FUJINET_LIB =
 # - empty which will use whatever is the latest
 # - undefined, no hirestxt-mod will be used
 # Only used for coco/dragon builds.
-#HIRESTXT_LIB =
+HIRESTXT_LIB = 0.5.0.3
 
 # Define extra dirs ("combos") that expand with a platform.
 # Format: platform+=combo1,combo2
