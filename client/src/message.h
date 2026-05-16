@@ -9,7 +9,9 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
+#ifndef _CMOC_VERSION_
 #include <stdbool.h>
+#endif /* _CMOC_VERSION_ */
 
 void display_message(const char* msg);
 void show_qr_code(void);
