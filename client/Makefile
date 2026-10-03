@@ -29,12 +29,13 @@ FUJINET_LIB =
 
 # HIRESTXT_LIB can be
 # - a version number such as 0.5.0.2
+#   (0.5.1.7+ defaults to the no-VT52 build; append +vt52 for the full one)
 # - a directory which contains the built library
 # - a URL to a git repo
 # - empty which will use whatever is the latest
 # - undefined, no hirestxt-mod will be used
 # Only used for coco/dragon builds.
-HIRESTXT_LIB = 0.5.0.3
+HIRESTXT_LIB =
 
 # Define extra dirs ("combos") that expand with a platform.
 # Format: platform+=combo1,combo2
